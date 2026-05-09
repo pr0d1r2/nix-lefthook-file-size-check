@@ -19,7 +19,7 @@ fi
 get_limit() {
     local ext="$1"
     local limit
-    limit=$(grep -m1 "^  ${ext}:" "$config" 2>/dev/null | awk '{print $2}')
+    limit=$(grep -F -m1 "  ${ext}:" "$config" 2>/dev/null | awk '{print $2}')
     if [ -z "$limit" ]; then
         limit=$(grep "^default:" "$config" | awk '{print $2}')
     fi
