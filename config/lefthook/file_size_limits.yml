@@ -1,0 +1,3 @@
+default: 8192
+extensions:
+  lock: 131072
