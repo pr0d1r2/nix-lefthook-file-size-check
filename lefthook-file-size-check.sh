@@ -3,7 +3,7 @@
 # Reads per-extension limits from a YAML config file.
 # Config path: LEFTHOOK_FILE_SIZE_CONFIG (default: config/lefthook/file_size_limits.yml)
 # Usage: lefthook-file-size-check file1 [file2 ...]
-# NOTE: sourced by writeShellApplication — no shebang or set needed.
+# NOTE: sourced by writeShellApplication - no shebang or set needed.
 
 if [ $# -eq 0 ]; then
     exit 0

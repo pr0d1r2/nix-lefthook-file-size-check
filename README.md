@@ -26,7 +26,7 @@ The `default` key sets the fallback limit (bytes). Extension-specific limits go 
 
 ### Option A: Lefthook remote (recommended)
 
-Add to your `lefthook.yml` — no flake input needed, just the wrapper binary in your devShell:
+Add to your `lefthook.yml` - no flake input needed, just the wrapper binary in your devShell:
 
 ```yaml
 remotes:
@@ -80,7 +80,7 @@ export LEFTHOOK_FILE_SIZE_CHECK_TIMEOUT=60
 
 ## Development
 
-The repo includes an `.envrc` for [direnv](https://direnv.net/) — entering the directory automatically loads the devShell with all dependencies:
+The repo includes an `.envrc` for [direnv](https://direnv.net/) - entering the directory automatically loads the devShell with all dependencies:
 
 ```bash
 cd nix-lefthook-file-size-check  # direnv loads the flake
