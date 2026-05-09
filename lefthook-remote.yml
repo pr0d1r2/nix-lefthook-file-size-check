@@ -1,0 +1,10 @@
+---
+pre-commit:
+  commands:
+    file-size-check:
+      run: timeout ${LEFTHOOK_FILE_SIZE_CHECK_TIMEOUT:-30} lefthook-file-size-check {staged_files}
+
+pre-push:
+  commands:
+    file-size-check:
+      run: timeout ${LEFTHOOK_FILE_SIZE_CHECK_TIMEOUT:-30} lefthook-file-size-check {push_files}
