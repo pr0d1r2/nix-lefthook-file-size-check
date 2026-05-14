@@ -9,6 +9,6 @@ config="$2"
 
 limit=$(grep -F -m1 "  ${ext}:" "$config" 2>/dev/null | awk '{print $2}' || true)
 if [ -z "$limit" ]; then
-    limit=$(grep "^default:" "$config" | awk '{print $2}')
+    limit=$(grep "^default:" "$config" | awk '{print $2}' || true)
 fi
 echo "$limit"
