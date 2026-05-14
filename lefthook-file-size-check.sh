@@ -16,16 +16,6 @@ if [ ! -f "$config" ]; then
     exit 1
 fi
 
-get_limit() {
-    local ext="$1"
-    local limit
-    limit=$(grep -F -m1 "  ${ext}:" "$config" 2>/dev/null | awk '{print $2}')
-    if [ -z "$limit" ]; then
-        limit=$(grep "^default:" "$config" | awk '{print $2}')
-    fi
-    echo "$limit"
-}
-
 violations=()
 
 for f in "$@"; do
@@ -35,7 +25,7 @@ for f in "$@"; do
     if [ "$ext" = "$basename" ]; then
         ext="$basename"
     fi
-    limit=$(get_limit "$ext")
+    limit=$(get-file-size-limit "$ext" "$config")
     if [ -z "$limit" ]; then
         continue
     fi
