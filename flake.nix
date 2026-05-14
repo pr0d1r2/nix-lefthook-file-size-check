@@ -37,12 +37,21 @@
     in
     {
       packages = forAllSystems (pkgs: {
+        get-file-size-limit = pkgs.writeShellApplication {
+          name = "get-file-size-limit";
+          runtimeInputs = [
+            pkgs.gawk
+            pkgs.gnugrep
+          ];
+          text = builtins.readFile ./get-file-size-limit.sh;
+        };
         default = pkgs.writeShellApplication {
           name = "lefthook-file-size-check";
           runtimeInputs = [
             pkgs.gawk
             pkgs.gnugrep
             pkgs.coreutils
+            self.packages.${pkgs.stdenv.hostPlatform.system}.get-file-size-limit
           ];
           text = builtins.readFile ./lefthook-file-size-check.sh;
         };
@@ -55,6 +64,7 @@
           shells = nix-dev-shell-agentic.lib.mkShells {
             inherit pkgs inputs;
             ciPackages = [
+              self.packages.${system}.get-file-size-limit
               self.packages.${system}.default
             ];
             shellHook = builtins.replaceStrings [ "@BATS_LIB_PATH@" ] [ "${shells.batsWithLibs}" ] (
