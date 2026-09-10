@@ -18,9 +18,18 @@ extensions:
   rb: 8192
   js: 10240
   Gemfile: 6144
+paths:
+  # one known-large file, declared, with the reason beside it
+  SPEC.md: 262144
 ```
 
 The `default` key sets the fallback limit (bytes). Extension-specific limits go under `extensions`. Bare filenames (like `Gemfile`) are matched by full filename.
+
+A `paths` entry is keyed on the repo-relative path and takes precedence over the extension limit, in either direction -- it can raise a ceiling for one file or lower it. It exists so that a single known-large file does not force the limit up for every file sharing its extension: a whole-repository spec, a generated inventory, a vendored data file. The exemption then sits in the config with a comment saying why, rather than hidden in a raised ceiling nobody can attribute later.
+
+Precedence is `paths` > `extensions` > `default`, and sections are respected -- a key only counts under the heading it appears below, so a path that happens to look like an extension cannot answer for one. A leading `./` on the checked path is normalized away, because lefthook passes bare paths and a `find` passes `./`-prefixed ones, and an exemption that depends on the caller is not an exemption.
+
+A violation names the rule that decided it -- `(.md)` for an extension limit, `(path: SPEC.md)` for a path entry -- so the message says which line of the config to edit.
 
 ## Usage
 

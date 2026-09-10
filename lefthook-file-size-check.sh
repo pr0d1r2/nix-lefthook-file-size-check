@@ -25,13 +25,25 @@ for f in "$@"; do
     if [ "$ext" = "$basename" ]; then
         ext="$basename"
     fi
-    limit=$(get-file-size-limit "$ext" "$config")
+    # A `paths:` entry is keyed on the repo-relative path, and callers name
+    # files both ways ("SPEC.md" from lefthook, "./SPEC.md" from a find), so the
+    # leading "./" is normalized away before the lookup. Without this an
+    # exemption silently stops applying depending on who invoked the check.
+    rel="${f#./}"
+    limit=$(get-file-size-limit "$ext" "$config" "$rel")
     if [ -z "$limit" ]; then
         continue
     fi
     size=$(wc -c <"$f" | tr -d ' ')
     if [ "$size" -gt "$limit" ]; then
-        violations+=("$f: ${size} bytes > ${limit} limit (.$ext)")
+        # Name the RULE that decided, so a violation says which line of the
+        # config to look at -- a path exemption and an extension limit are
+        # edited in different places.
+        rule=".$ext"
+        if [ "$limit" != "$(get-file-size-limit "$ext" "$config")" ]; then
+            rule="path: $rel"
+        fi
+        violations+=("$f: ${size} bytes > ${limit} limit (${rule})")
     fi
 done
 
