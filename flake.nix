@@ -16,6 +16,16 @@
       url = "github:pr0d1r2/nix-lefthook-unicode-lint";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # lefthook.yml pulls the bats-unit remote config, whose command is the
+    # wrapper `lefthook-bats-unit` rather than a bare `bats` invocation. The CI
+    # shell runs with --ignore-environment, so a wrapper nothing here provides
+    # is simply absent: `timeout: failed to run command 'lefthook-bats-unit'`,
+    # reported by lefthook as a FAILED CHECK. A check that consumes a config
+    # must also supply the binary that config names.
+    nix-lefthook-bats-unit = {
+      url = "github:pr0d1r2/nix-lefthook-bats-unit";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -23,6 +33,7 @@
       self,
       nixpkgs,
       nix-dev-shell-agentic,
+      nix-lefthook-bats-unit,
       ...
     }@inputs:
     let
@@ -61,18 +72,32 @@
         pkgs:
         let
           inherit (pkgs.stdenv.hostPlatform) system;
+          localBin = "${self.packages.${system}.default}/bin:${
+            self.packages.${system}.get-file-size-limit
+          }/bin";
           shells = nix-dev-shell-agentic.lib.mkShells {
             inherit pkgs inputs;
             ciPackages = [
               self.packages.${system}.get-file-size-limit
               self.packages.${system}.default
+              nix-lefthook-bats-unit.packages.${system}.default
             ];
-            shellHook = builtins.replaceStrings [ "@BATS_LIB_PATH@" ] [ "${shells.batsWithLibs}" ] (
-              builtins.readFile ./dev.sh
-            );
+            shellHook =
+              builtins.replaceStrings [ "@BATS_LIB_PATH@" "@LOCAL_BIN@" ] [ "${shells.batsWithLibs}" localBin ]
+                (builtins.readFile ./dev.sh);
           };
         in
+        # mkShells applies `shellHook` to the interactive shell only, and CI runs
+        # `.#ci`. Without this the CI shell keeps the shared shell's PINNED copy
+        # of this tool ahead of the one just built, so CI tests the release.
         shells
+        // {
+          ci = shells.ci.overrideAttrs (old: {
+            shellHook =
+              (old.shellHook or "")
+              + builtins.replaceStrings [ "@LOCAL_BIN@" ] [ localBin ] (builtins.readFile ./local-bin.sh);
+          });
+        }
       );
     };
 }
